@@ -30,31 +30,60 @@ class Model:
         
         self.calg_idx = 0
         self.file_set = False
-
+        self.unique_column_list = []
+        
     def set_tr_file(self, file_name):
+        
         self.f_train = pd.read_excel(file_name)  # Excel 파일 열음
         self.fea_list = np.array(self.f_train.columns)
         self.nparr_train = np.array(self.f_train.values)
         self.file_set = False
+
+        for i in range(len(self.fea_list)):
+            if len(self.nparr_train.T[i]) == len(set(self.nparr_train.T[i])):
+                self.unique_column_list.append(self.fea_list[i])
+        
+        
 
     def set_ts_file(self, file_name):
         self.f_test = pd.read_excel(file_name)
         self.nparr_test = np.array(self.f_test.values)
         self.file_set = False
         
+        
     def get_nparr_train(self):
         return self.nparr_train
 
+    def delete_unique_column(self, column_idx):
+        
+   
+        self.tr_data = np.delete(self.nparr_train, np.s_[column_idx:column_idx+1], axis=1)
+        self.ts_data = np.delete(self.nparr_test, np.s_[column_idx:column_idx+1], axis=1)
+        self.fea_list = np.delete(self.fea_list, column_idx)
+    
+        
+        
+        df = pd.DataFrame(self.tr_data)
+        df.fillna(0)
+        self.tr_data=np.array(df)
+        df = pd.DataFrame(self.ts_data)
+        df.fillna(0)
+        self.ts_data=np.array(df)
+      
+        self.file_set = False
+
+        
+        
     def set_answer(self, answer_idx):
         
-
+       
         self.tr_data = np.delete(self.nparr_train, np.s_[answer_idx:answer_idx+1], axis=1)
         self.tr_ans = self.preprocessor.label_encoder(self.nparr_train[:, answer_idx].flatten())
-      
+        
         self.ts_data = np.delete(self.nparr_test, np.s_[answer_idx:answer_idx+1], axis=1)
         self.ts_ans = self.preprocessor.label_encoder(self.nparr_test[:, answer_idx].flatten())
         self.fea_list = np.delete(self.fea_list, np.s_[answer_idx:answer_idx+1])
-        
+    
         df = pd.DataFrame(self.tr_data)
         df.fillna(0)
         self.tr_data=np.array(df)
