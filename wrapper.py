@@ -58,20 +58,20 @@ def wrapper(tr_data, tr_ans, ts_data, ts_ans):
     for tr, ts in zip(subset(tr_data), subset(ts_data)):
         for s_tr, s_ts in zip(tr, ts):
             for clf in classifiers:
-                clf.fit(s_tr, tr_ans)
-                pred_y = clf.predict(s_ts)
-                temp_score = accuracy_score(ts_ans, pred_y)
+                clf.fit(s_tr.astype(float), tr_ans.astype(float))
+                pred_y = clf.predict(s_ts.astype(float))
+                temp_score = accuracy_score(ts_ans.astype(float), pred_y.astype(float))
                 if result_score < temp_score:
                     result_score = temp_score
                     result_clf = clf
-                    result_tr_data = s_tr
-                    result_ts_data = s_ts
+                    result_tr_data = s_tr.astype(float)
+                    result_ts_data = s_ts.astype(float)
                                 
     if type(result_clf) == type(KNeighborsClassifier()):
         k_num = 5                 
     
     accuracy = result_score
     classifier_name = result_clf
-    precision, recall, fbeta_score, support = precision_recall_fscore_support(ts_ans, pred_y)           
-    conf_mat = confusion_matrix(ts_ans, pred_y) 
+    precision, recall, fbeta_score, support = precision_recall_fscore_support(ts_ans.astype(float), pred_y.astype(float))           
+    conf_mat = confusion_matrix(ts_ans.astype(float), pred_y.astype(float)) 
     return result_tr_data, result_ts_data

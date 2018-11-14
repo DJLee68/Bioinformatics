@@ -189,10 +189,14 @@ class MyFrame(Frame):
         self.class_combobox['values'] = self.model.get_fea_list()
     
     def set_unique_column_combobox(self):
+        if self.model.unique_column_list == []:
+            self.set_class_combobox()
         self.unique_column_combobox['values'] = self.model.unique_column_list
              
     def delete_unique_column_idx(self):
-        self.model.delete_unique_column(self.unique_column_combobox.current())
+        self.unique_column_name = self.model.unique_column_list[self.unique_column_combobox.current()]
+        
+        self.model.delete_unique_column(np.where(self.model.fea_list == self.unique_column_name)[0][0])
         tkinter.messagebox.showinfo("Delete unique column", "Feature가 아닌 고유 데이터를 제거합니다.")
         self.set_class_combobox()
         
@@ -204,10 +208,10 @@ class MyFrame(Frame):
         self.model.remove_var_zero()
         self.set_class_combobox()
         
-        for prepro_num in range(2):
-            self.model.pre_tr_data, self.model.pre_ts_data = self.model.preprocessor.preprocessing(prepro_num, self.model.tr_data, self.model.ts_data)
+        for prepro_num in range(3):
+            self.model.pre_tr_data, self.model.pre_ts_data = self.model.preprocessor.preprocess(prepro_num, self.model.tr_data, self.model.ts_data)
             prepro_name = self.model.preprocessor.alg_list[prepro_num]
-            for fselector_num in range(2,3):
+            for fselector_num in range(4):
                 self.fs_size = 3
                 self.model.set_fs_size(self.fs_size)
                 self.model.fs_tr_data, self.model.fs_ts_data = self.model.fselector.start_fs(fselector_num, self.model.pre_tr_data, self.model.tr_ans, self.model.pre_ts_data, self.model.ts_ans, self.model.calg_idx)
@@ -227,6 +231,7 @@ class MyFrame(Frame):
                     classifier_name = self.model.classifier.alg_list[classifier_num]
                     toexcel.set_value(prepro_name, fselector_name, self.fs_size, classifier_name, self.model.classifier.k, accuracy, precision, recall, fbeta_score, support, conf_mat)
         
+        print("종료되었습니다. 다른 파일을 입력하세요.")
             
 
     def set_data_preprocess(self):

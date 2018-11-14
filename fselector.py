@@ -3,7 +3,7 @@ from sklearn.decomposition import PCA
 from sklearn.metrics import mutual_info_score
 import wrapper as wp
 from tkinter import simpledialog
-
+import pandas as pd
 class FSelector:
     alg_list = None
     
@@ -24,10 +24,9 @@ class FSelector:
 
     def pcc(self, tr_data, tr_ans, ts_data):
         corr_array = []
-        print(type(tr_data), tr_data.shape)
-        for i in range(0, tr_data.shape[1]):
-            print(np.corrcoef(tr_data.T[i], tr_ans))
-            corr_array.append(np.corrcoef(tr_data.T[i], tr_ans)[0, 1])
+        
+        for i in range(tr_data.shape[1]):
+            corr_array.append(np.corrcoef(tr_data.T[i].astype(float), tr_ans.astype(float))[0, 1])
         corr_array = np.square(corr_array)
         pcc_feature_idx = np.flip(np.argsort(corr_array), 0)
         fs_tr_data = tr_data[:, pcc_feature_idx[0:self.fs_size]]

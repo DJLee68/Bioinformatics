@@ -22,6 +22,9 @@ class Classifier:
         self.alg_list = ['Naive_bayes', 'k-Nearest Neighbor', 'Decision Tree', 'SVM', 'Random Forest', 'Logistic Regression']
         self.k = 0
     def predict(self, alg_idx, tr_data, tr_ans, ts_data):
+        tr_data = tr_data.astype(float)
+        tr_ans =  tr_ans.reshape(-1,1).astype(float)
+        ts_data = ts_data.astype(float)
         if alg_idx == 0:
             return self.nb_classifier(tr_data, tr_ans, ts_data)
         elif alg_idx == 1:
@@ -38,7 +41,6 @@ class Classifier:
     def nb_classifier(self, tr_data, tr_ans, ts_data):
         gnb = GaussianNB()
         train_mdl = gnb.fit(tr_data, tr_ans)
-
         test_pred = train_mdl.predict(ts_data)
         self.k = 0
         return test_pred
@@ -90,6 +92,8 @@ class Classifier:
         pred = self.predict(alg_idx, tr_data, tr_ans, ts_data)
         correct_count = (pred == ts_ans).sum()
         accuracy = correct_count / len(ts_ans)
+        ts_ans = ts_ans.astype(float)
+        pred = pred.astype(float)
         precision, recall, fbeta_score, support = precision_recall_fscore_support(ts_ans, pred)
         conf_mat = confusion_matrix(ts_ans, pred)
 
