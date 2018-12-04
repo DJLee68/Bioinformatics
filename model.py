@@ -10,6 +10,7 @@ class Model:
         self.f_train = None
         self.f_test = None
         self.fea_list = None
+        self.pre_fea_list = None
         self.nparr_train = None
         self.nparr_test = None
 
@@ -30,7 +31,7 @@ class Model:
         
         self.calg_idx = 0
         self.file_set = False
-        self.unique_column_list = []
+       
         
     def set_tr_file(self, file_name):
         
@@ -39,13 +40,7 @@ class Model:
         self.nparr_train = np.array(self.f_train.values)
         self.tr_data = self.nparr_train
         self.file_set = False
-
-        for i in range(len(self.fea_list)):
-            if len(self.nparr_train.T[i]) == len(set(self.nparr_train.T[i])):
-                self.unique_column_list.append(self.fea_list[i])
-        
-        
-
+        print("tr nparr", self.nparr_train.shape)
     def set_ts_file(self, file_name):
         self.f_test = pd.read_excel(file_name)
         self.nparr_test = np.array(self.f_test.values)
@@ -53,6 +48,8 @@ class Model:
         self.file_set = False
         self.find_question_mark()
         
+        print("delete ? tr nparr", self.nparr_train.shape)
+        print("fea-list: ", self.fea_list)
     def get_nparr_train(self):
         return self.nparr_train
 
@@ -61,20 +58,28 @@ class Model:
         temp_list = []
         for i in range(self.nparr_train.shape[1]):
             if np.any(self.nparr_train.T[i]=="?"):
-                temp_list.append(1)
-            else:
-                temp_list.append(0)
+                temp_list.append(i)
         self.nparr_train = np.delete(self.nparr_train, temp_list, axis=1)
         self.nparr_test = np.delete(self.nparr_test, temp_list, axis=1)
+        self.fea_list = np.delete(self.fea_list, temp_list)
+        print(self.fea_list)
+        print(self.nparr_train)
         
     def delete_unique_column(self, column_idx):
-        
         
         self.tr_data = np.delete(self.nparr_train, np.s_[column_idx:column_idx+1], axis=1)
         self.ts_data = np.delete(self.nparr_test, np.s_[column_idx:column_idx+1], axis=1)
         self.fea_list = np.delete(self.fea_list, column_idx)
         
-        
+        print("tr_data", self.tr_data.shape)
+        print("delete unique tr data :", self.fea_list)
+        df = pd.DataFrame(self.tr_data)
+        df.fillna(0)
+        self.tr_data=np.array(df)
+        df = pd.DataFrame(self.ts_data)
+        df.fillna(0)
+        self.ts_data=np.array(df)
+        self.file_set = False
 
       
         self.file_set = False
@@ -85,19 +90,15 @@ class Model:
         self.tr_ans = self.preprocessor.label_encoder(self.tr_data.T[answer_idx])
         self.tr_data = np.delete(self.tr_data, np.s_[answer_idx:answer_idx+1], axis=1)
         
-        """
-        self.tr_ans = self.preprocessor.label_encoder(self.nparr_train[:, answer_idx].flatten())
-        """
+       
         self.ts_ans = self.preprocessor.label_encoder(self.ts_data.T[answer_idx])
         self.ts_data = np.delete(self.ts_data, np.s_[answer_idx:answer_idx+1], axis=1)
         
-        """
-        self.ts_ans = self.preprocessor.label_encoder(self.nparr_test[:, answer_idx].flatten())
-        """
+        print("class: ", self.fea_list[answer_idx])
+    
+        
         self.fea_list = np.delete(self.fea_list, np.s_[answer_idx:answer_idx+1])
         
-      
-    
         df = pd.DataFrame(self.tr_data)
         df.fillna(0)
         self.tr_data=np.array(df)
@@ -107,6 +108,7 @@ class Model:
         self.file_set = False
         
 
+    
     def get_fea_list(self):
         return np.ndarray.tolist(self.fea_list)
 

@@ -60,13 +60,22 @@ class Preprocessor:
         return np.array(data)
 
     def standard_normalization(self, data):
+        if np.any(data == data.astype(str)):
+            data = self.label_encoder(data)
+        data = data.astype(float)
         return (data-np.mean(data))/np.std(data)
 
     def min_max(self, data, min_val, max_val):
+        if np.any(data == data.astype(str)):
+            data = self.label_encoder(data)
+        data = data.astype(float)
         data = ((max_val-min_val)*((data-data.min())/(data.max()-data.min()))) + min_val
         
         return data
     def categorical(self, data):
+        if np.any(data == data.astype(str)):
+            data = self.label_encoder(data)
+        data = data.astype(float)
         z= (data - data.mean())/data.std()
         for i in range(z.shape[0]):
             if z[i] <= -1.28:

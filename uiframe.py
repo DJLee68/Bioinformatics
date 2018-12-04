@@ -52,6 +52,10 @@ class MyFrame(Frame):
         
         unique_column_sel_btn = Button(unique_column_frame, text="해당 데이터 제거", width=15, command=self.delete_unique_column_idx)
         unique_column_sel_btn.pack(side=LEFT, anchor=N, padx=10, pady=10)
+        
+        unique_column_pass_btn = Button(unique_column_frame, text="제거할 데이터 없음", width=15, command=self.not_delete_column)
+        unique_column_pass_btn.pack(side=LEFT, anchor=N, padx=10, pady=10)
+        
         # 데이터 타입, 클래스 선택
         data_type_frame = Frame(self)
         data_type_frame.pack(fill=X)
@@ -162,7 +166,7 @@ class MyFrame(Frame):
         self.model.set_tr_file(self.tr_file_name)
         self.set_data_type(self.model.get_nparr_train())
         
-        self.set_unique_column_combobox()
+        
         
         toexcel.sheet_init(self.tr_file_name)
         
@@ -173,6 +177,7 @@ class MyFrame(Frame):
         self.ts_file_name = askopenfilename(title="Choose your data file")
         self.ts_entry_name.config(text=self.ts_file_name)
         self.model.set_ts_file(self.ts_file_name)
+        self.set_unique_column_combobox()
 
     def set_data_type(self, data):
         type_res = data_type_indicator(data)
@@ -189,17 +194,20 @@ class MyFrame(Frame):
         self.class_combobox['values'] = self.model.get_fea_list()
     
     def set_unique_column_combobox(self):
-        if self.model.unique_column_list == []:
-            self.set_class_combobox()
-        self.unique_column_combobox['values'] = self.model.unique_column_list
-             
-    def delete_unique_column_idx(self):
-        self.unique_column_name = self.model.unique_column_list[self.unique_column_combobox.current()]
+        self.unique_column_combobox['values'] = self.model.get_fea_list()
         
-        self.model.delete_unique_column(np.where(self.model.fea_list == self.unique_column_name)[0][0])
+    def not_delete_column(self):
+        tkinter.messagebox.showinfo("not Delete column", "Feature를 제거하지 않습니다.")
+        self.set_class_combobox()
+         
+    def delete_unique_column_idx(self):
+
+      
+        self.model.delete_unique_column(self.unique_column_combobox.current())
         tkinter.messagebox.showinfo("Delete unique column", "Feature가 아닌 고유 데이터를 제거합니다.")
         self.set_class_combobox()
-        
+        self.set_unique_column_combobox()
+            
         
 
     def set_answer_idx(self):

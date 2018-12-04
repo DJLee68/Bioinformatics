@@ -37,7 +37,8 @@ class FSelector:
     def pca(self, tr_data, ts_data):
         pca = PCA(n_components=self.fs_size)
         pca.fit(tr_data)
-
+        
+     
         fs_tr_data = pca.transform(tr_data)
         fs_ts_data = pca.transform(ts_data)
 
