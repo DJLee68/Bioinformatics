@@ -9,7 +9,9 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import f1_score
 from tkinter import simpledialog
+import deeplearning as dl
 import numpy as np
+import tensorflow as tf
 
 
 
@@ -19,12 +21,14 @@ class Classifier:
     alg_list = []
     
     def __init__(self):
-        self.alg_list = ['Naive_bayes', 'k-Nearest Neighbor', 'Decision Tree', 'SVM', 'Random Forest', 'Logistic Regression']
+        self.alg_list = ['Naive_bayes', 'k-Nearest Neighbor', 'Decision Tree', 'SVM', 'Random Forest', 'Logistic Regression', 'Deep Learning']
         self.k = 0
-    def predict(self, alg_idx, tr_data, tr_ans, ts_data):
+    def predict(self, alg_idx, tr_data, tr_ans, ts_data, ts_ans):
         tr_data = tr_data.astype(float)
         tr_ans =  tr_ans.reshape(-1,1).astype(float)
         ts_data = ts_data.astype(float)
+        
+ 
         if alg_idx == 0:
             return self.nb_classifier(tr_data, tr_ans, ts_data)
         elif alg_idx == 1:
@@ -37,6 +41,25 @@ class Classifier:
             return self.rf_classifier(tr_data, tr_ans, ts_data)
         elif alg_idx == 5:
             return self.lgregression_classifier(tr_data, tr_ans, ts_data)
+        elif alg_idx == 6:      
+            
+            feature_columns = [tf.feature_column.numeric_column('x', shape=[tr_data.shape[1]])]
+            regressor = tf.estimator.DNNClassifier(
+                    feature_columns=feature_columns, hidden_units=[10,10]
+            )
+            train_input_fn = tf.estimator.inputs.numpy_input_fn(
+                    x = {'x' : tr_data}, y = tr_ans, batch_size=1, num_epochs=None, shuffle=True
+            )
+            regressor.train(input_fn = train_input_fn, steps=10000)
+            test_input_fn = tf.estimator.inputs.numpy_input_fn(
+                    x = {'x' :ts_data}, y = ts_ans, num_epochs=1, shuffle=False
+            )
+            predictions = list(regressor.predict(input_fn=test_input_fn))
+            
+            y_predicted = np.array(list(p['class_ids'] for p in predictions))
+            y_predicted = y_predicted.reshape(np.array(ts_ans).shape)
+    
+            return y_predicted
         
     def nb_classifier(self, tr_data, tr_ans, ts_data):
         gnb = GaussianNB()
@@ -89,10 +112,11 @@ class Classifier:
         return test_pred
 
     def get_result(self, alg_idx, tr_data, tr_ans, ts_data, ts_ans):
-        pred = self.predict(alg_idx, tr_data, tr_ans, ts_data)
+        pred = self.predict(alg_idx, tr_data, tr_ans, ts_data, ts_ans)
         correct_count = (pred == ts_ans).sum()
         accuracy = correct_count / len(ts_ans)
         ts_ans = ts_ans.astype(float)
+    
         pred = pred.astype(float)
         precision, recall, fbeta_score, support = precision_recall_fscore_support(ts_ans, pred)
         conf_mat = confusion_matrix(ts_ans, pred)

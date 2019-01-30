@@ -56,6 +56,19 @@ class MyFrame(Frame):
         unique_column_pass_btn = Button(unique_column_frame, text="제거할 데이터 없음", width=15, command=self.not_delete_column)
         unique_column_pass_btn.pack(side=LEFT, anchor=N, padx=10, pady=10)
         
+        #Imputation
+        imputation_frame = Frame(self)
+        imputation_frame.pack(fill=X)
+        imputation_label = Label(imputation_frame, text="Imputation:", width=15)
+        imputation_label.pack(side=LEFT, anchor=N, padx=10, pady=10)
+        
+        self.imputation_combobox = Combobox(imputation_frame, width=20, textvariable=str)
+        self.imputation_combobox.pack(side=LEFT, anchor=N, padx=10, pady=10)
+        
+        imputation_sel_btn = Button(imputation_frame, text="Imputatioin 실행", width=15, command=self.set_imputation)
+        imputation_sel_btn.pack(side=LEFT, anchor=N, padx=10, pady=10)
+        
+        
         # 데이터 타입, 클래스 선택
         data_type_frame = Frame(self)
         data_type_frame.pack(fill=X)
@@ -165,6 +178,7 @@ class MyFrame(Frame):
         self.tr_entry_name.config(text=self.tr_file_name)
         self.model.set_tr_file(self.tr_file_name)
         self.set_data_type(self.model.get_nparr_train())
+        self.set_imputation_combobox()
         
         
         
@@ -190,11 +204,18 @@ class MyFrame(Frame):
         elif type_res == 3:
             self.type_indi_label.config(text="Mixed")
 
+
+    def set_imputation_combobox(self):
+        self.imputation_combobox['values'] = self.model.imputation_list
+        
     def set_class_combobox(self):
         self.class_combobox['values'] = self.model.get_fea_list()
     
     def set_unique_column_combobox(self):
         self.unique_column_combobox['values'] = self.model.get_fea_list()
+        
+    def set_imputation(self):
+        self.model.imputation(self.imputation_combobox.current())
         
     def not_delete_column(self):
         tkinter.messagebox.showinfo("not Delete column", "Feature를 제거하지 않습니다.")
@@ -215,6 +236,8 @@ class MyFrame(Frame):
         tkinter.messagebox.showinfo("Zero Var Delete", "분산이 0인 특징을 제거합니다.")
         self.model.remove_var_zero()
         self.set_class_combobox()
+        """
+        한꺼번에 실행하는 코드
         
         for prepro_num in range(3):
             self.model.pre_tr_data, self.model.pre_ts_data = self.model.preprocessor.preprocess(prepro_num, self.model.tr_data, self.model.ts_data)
@@ -240,7 +263,7 @@ class MyFrame(Frame):
                     toexcel.set_value(prepro_name, fselector_name, self.fs_size, classifier_name, self.model.classifier.k, accuracy, precision, recall, fbeta_score, support, conf_mat)
         
         print("종료되었습니다. 다른 파일을 입력하세요.")
-            
+        """    
 
     def set_data_preprocess(self):
         if self.model.file_set:
